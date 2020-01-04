@@ -1,0 +1,98 @@
+cabal-version: 2.2
+
+name:           quiver-rows
+version:        0.1.0
+synopsis:       Algebraic Effects in Haskell using Implicit Parameters
+description:    implicit-effects is a experimental effect library to support
+                algebraic effects in Haskell.
+category:       Effect
+stability:      experimental
+homepage:       https://github.com/maybevoid/implicit-effects
+bug-reports:    https://github.com/maybevoid/quiver-rows/issues
+author:         Soares Chen
+maintainer:     Soares Chen <soares.chen@maybevoid.com>
+copyright:      Copyright (C) Soares Ruofei Chen
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://github.com/maybevoid/implicit-effects
+
+common deps
+  ghc-options: -Wall -O2 -flate-specialise
+  default-language: Haskell2010
+  build-depends:
+      async
+    , base
+    , free
+    , mtl
+    , reflection
+    , constraints
+    , transformers
+    , monad-control
+    , ghc-prim
+  default-extensions:
+    GADTs
+    Strict
+    DataKinds
+    EmptyCase
+    PolyKinds
+    StrictData
+    RankNTypes
+    TypeFamilies
+    InstanceSigs
+    TypeOperators
+    DeriveFunctor
+    ImplicitParams
+    ExplicitForAll
+    KindSignatures
+    PatternSynonyms
+    ConstraintKinds
+    TypeApplications
+    FlexibleContexts
+    FlexibleInstances
+    OverloadedStrings
+    DerivingStrategies
+    AllowAmbiguousTypes
+    ScopedTypeVariables
+    QuantifiedConstraints
+    MultiParamTypeClasses
+    FunctionalDependencies
+    TypeFamilyDependencies
+    GeneralizedNewtypeDeriving
+
+library
+  import: deps
+  exposed-modules:
+    Quiver.Implicit.Param
+    Quiver.Row.Dict
+    Quiver.Row.Row
+    Quiver.Row.Entail
+
+    Quiver.Row.Product.Product
+    Quiver.Row.Product.Elim
+    Quiver.Row.Product.Intro
+
+  other-modules:
+
+  hs-source-dirs:
+      src/lib
+
+test-suite quiver-rows-test
+  import: deps
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  other-modules:
+    Quiver.Test.Product.Elim
+    Quiver.Test.Product.Intro
+
+  hs-source-dirs:
+      src/test
+  build-depends:
+      quiver-rows
+    , QuickCheck
+    , tasty
+    , tasty-hunit
+    , tasty-quickcheck

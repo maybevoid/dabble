@@ -1,0 +1,8 @@
+dist/
+dist-newstyle/
+.stack-work/
+benchmarks/
+.ghc*
+result*
+.haskell-code-explorer
+cabal.project.local
