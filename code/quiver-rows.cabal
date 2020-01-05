@@ -1,4 +1,4 @@
-cabal-version: 2.2
+cabal-version: 2.4
 
 name:           quiver-rows
 version:        0.1.0
@@ -69,11 +69,14 @@ library
     Quiver.Implicit.Param
     Quiver.Row.Dict
     Quiver.Row.Row
+    Quiver.Row.Field
     Quiver.Row.Entail
+    Quiver.Row.Product
 
     Quiver.Row.Product.Product
     Quiver.Row.Product.Elim
     Quiver.Row.Product.Intro
+    Quiver.Row.Product.Cast
 
   other-modules:
 

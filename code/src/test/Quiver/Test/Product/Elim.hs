@@ -5,9 +5,8 @@ import GHC.Types
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import Quiver.Row.Row
-import Quiver.Row.Product.Elim
-import Quiver.Row.Product.Product
+import Quiver.Row.Field
+import Quiver.Row.Product
 
 productElimTests :: TestTree
 productElimTests = testGroup "product elim tests"

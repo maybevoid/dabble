@@ -4,6 +4,7 @@ import GHC.Types
 
 import Quiver.Row.Row
 import Quiver.Row.Entail
+import Quiver.Row.Field
 import Quiver.Implicit.Param
 import Quiver.Row.Product.Product
 
@@ -29,10 +30,10 @@ instance
   ( ElimProduct a
   , ElimProduct b
   )
-  => ElimProduct (Product a b) where
+  => ElimProduct (a ⊗ b) where
     elimGetter
       :: forall c r
-       . (c -> Product a b)
+       . (c -> a ⊗ b)
       -> ( ( RowConstraint a ((->) c)
            , RowConstraint b ((->) c)
            ) => r

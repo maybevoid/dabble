@@ -1,15 +1,18 @@
 module Quiver.Test.Product.Intro where
 
+import GHC.Types
+
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import Quiver.Row.Row
-import Quiver.Row.Product.Intro
-import Quiver.Row.Product.Product
+import Quiver.Row.Field
+import Quiver.Row.Product
 
 productIntroTests :: TestTree
 productIntroTests = testGroup "product intro tests"
-  [
+  [ test1
+  , test2
+  , test3
   ]
 
 type FooField = NamedField "Foo" String
@@ -17,6 +20,7 @@ type FooField = NamedField "Foo" String
 type BarField = NamedField "Bar" String
 
 type FooBarField = Product FooField BarField
+type BarFooField = Product BarField FooField
 
 fooField :: FooField
 fooField = Field "foo"
@@ -24,17 +28,11 @@ fooField = Field "foo"
 barField :: BarField
 barField = Field "bar"
 
-fooBarPair
-  :: Product
-      (NamedField "Foo" String)
-      (NamedField "Bar" String)
-fooBarPair = Product fooField barField
+fooBarPair :: FooField ⊗ BarField
+fooBarPair = fooField ⊗ barField
 
-barFooPair
-  :: Product
-      (NamedField "Bar" String)
-      (NamedField "Foo" String)
-barFooPair = Product barField fooField
+barFooPair :: BarField ⊗ FooField
+barFooPair = barField ⊗ fooField
 
 newtype Foo = Foo String
 
@@ -74,14 +72,88 @@ makeFoo2 =
     @a
     makeFooBar
 
-makeFoo3
+makeFooBar2
   :: forall a
    . (Constructor FooBarField a)
   => a
-makeFoo3 =
-  constructNamedField @"Bar" "bar" $
-    castConstructor
-      @FooField
-      @FooBarField
-      @a
-      makeFoo
+makeFooBar2 =
+  weakenConstruct
+    @Symbol
+    @"Bar"
+    @FooField
+    @FooBarField
+    @a
+    "bar"
+    makeFoo
+
+test1 :: TestTree
+test1 = testCase "construct foo" $ do
+  assertEqual
+    "should be able to make foo field"
+    makeFoo
+    fooField
+
+  assertEqual
+    "should be able to make foo field"
+    makeFoo2
+    fooField
+
+test2 :: TestTree
+test2 = testCase "construct foo bar" $ do
+  assertEqual
+    "should be able to make foo bar field"
+    makeFooBar
+    fooBarPair
+
+  assertEqual
+    "should be able to make foo bar field"
+    makeFooBar
+    barFooPair
+
+  assertEqual
+    "should be able to make foo bar field"
+    makeFooBar2
+    fooBarPair
+
+  assertEqual
+    "should be able to make foo bar field"
+    makeFooBar2
+    barFooPair
+
+
+test3 :: TestTree
+test3 = testCase "cast test" $ do
+  assertEqual
+    "should be able to cast foo bar to foo"
+    (castProduct fooBarPair)
+    fooField
+
+  assertEqual
+    "should be able to cast foo bar to bar"
+    (castProduct fooBarPair)
+    fooField
+
+  assertEqual
+    "should be able to cast bar foo to foo"
+    (castProduct barFooPair)
+    fooField
+
+  assertEqual
+    "should be able to cast bar foo to bar"
+    (castProduct barFooPair)
+    fooField
+
+  assertEqual
+    "should be able to cast foo bar to bar foo"
+    (castProduct fooBarPair)
+    barFooPair
+
+  assertEqual
+    "should be able to cast bar foo to foo bar"
+    (castProduct barFooPair)
+    fooBarPair
+
+  assertEqual
+    "should be able to cast foo bar to same foo bar"
+    (castProduct fooBarPair)
+    fooBarPair
