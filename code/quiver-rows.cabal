@@ -72,11 +72,18 @@ library
     Quiver.Row.Field
     Quiver.Row.Entail
     Quiver.Row.Product
+    Quiver.Row.Sum
 
     Quiver.Row.Product.Product
     Quiver.Row.Product.Elim
     Quiver.Row.Product.Intro
     Quiver.Row.Product.Cast
+
+    Quiver.Row.Sum.Sum
+    Quiver.Row.Sum.Elim
+    Quiver.Row.Sum.Intro
+    Quiver.Row.Sum.Match
+    Quiver.Row.Sum.Partition
 
   other-modules:
 
@@ -88,8 +95,10 @@ test-suite quiver-rows-test
   type: exitcode-stdio-1.0
   main-is: Main.hs
   other-modules:
-    Quiver.Test.Product.Elim
     Quiver.Test.Product.Intro
+    Quiver.Test.Product.Elim
+    Quiver.Test.Sum.Intro
+    Quiver.Test.Sum.Elim
 
   hs-source-dirs:
       src/test

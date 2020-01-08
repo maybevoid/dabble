@@ -13,12 +13,13 @@ class
   (Row a)
   => IntroProduct a where
     introProduct
-      :: RowConstraint a Identity
+      :: (RowConstraint a Identity)
       => a
 
 instance IntroProduct (Field k label e) where
   introProduct
-    :: (ImplicitParam k label (Identity e) => Field k label e)
+    :: ((ImplicitParam k label (Identity e))
+        => Field k label e)
   introProduct =
     Field $ runIdentity $
       captureParam @k @label
@@ -66,8 +67,8 @@ castConstructor
         (RowConstraint row2 Identity)
         (RowConstraint a Identity)
      )
-  => (Constructor row1 a => r)
-  -> (Constructor row2 a => r)
+  => ((Constructor row1 a) => r)
+  -> ((Constructor row2 a) => r)
 castConstructor cont =
   joinEntail
     @(RowConstraint row1 Identity)
@@ -78,7 +79,7 @@ castConstructor cont =
 constructField
   :: forall k label e r
    . e
-  -> (RowConstraint (Field k label e) Identity => r)
+  -> ((RowConstraint (Field k label e) Identity) => r)
   -> r
 constructField x cont =
   withParam @k @label (Identity x) cont
@@ -86,7 +87,7 @@ constructField x cont =
 constructNamedField
   :: forall label e r
    . e
-  -> (RowConstraint (NamedField label e) Identity => r)
+  -> ((RowConstraint (NamedField label e) Identity) => r)
   -> r
 constructNamedField = constructField @Symbol @label
 
@@ -96,9 +97,9 @@ strengthenConstruct
      , IntroProduct a
      )
   => e
-  -> (Constructor
+  -> ((Constructor
         (Field k label e ⊗ row)
-        a
+        a)
       => r)
   -> (Constructor row a => r)
 strengthenConstruct x cont =
@@ -121,8 +122,8 @@ weakenConstruct
          (RowConstraint row2 Identity)
      )
   => e
-  -> (Constructor row1 a => r)
-  -> (Constructor row2 a => r)
+  -> ((Constructor row1 a) => r)
+  -> ((Constructor row2 a) => r)
 weakenConstruct x cont =
   constructField @k @label x $
     joinEntail

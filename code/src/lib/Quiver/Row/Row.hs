@@ -2,6 +2,7 @@ module Quiver.Row.Row
 where
 
 import Data.Kind
+import Data.Void
 
 class Row row where
   type family RowConstraint
@@ -10,3 +11,6 @@ class Row row where
 
 instance Row () where
   type RowConstraint () f = ()
+
+instance Row Void where
+  type RowConstraint Void f = ()

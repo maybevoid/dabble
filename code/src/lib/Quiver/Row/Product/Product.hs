@@ -27,7 +27,7 @@ type a ⊗ b = Product a b
 
 instance
   ( Row a, Row b )
-  => Row (Product a b) where
+  => Row (a ⊗ b) where
     type RowConstraint (Product a b) f =
       (RowConstraint a f, RowConstraint b f)
 

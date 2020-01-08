@@ -19,8 +19,8 @@ type FooField = NamedField "Foo" String
 
 type BarField = NamedField "Bar" String
 
-type FooBarField = Product FooField BarField
-type BarFooField = Product BarField FooField
+type FooBarField = FooField ⊗ BarField
+type BarFooField = BarField ⊗ FooField
 
 fooField :: FooField
 fooField = Field "foo"
