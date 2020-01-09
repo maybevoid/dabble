@@ -2,19 +2,18 @@ module Quiver.Row.Product.Elim where
 
 import GHC.Types
 
-import Quiver.Row.Row
 import Quiver.Row.Entail
 import Quiver.Row.Field
 import Quiver.Implicit.Param
 import Quiver.Row.Product.Product
 
 class
-  (Row a)
+  (ProductRow a)
   => ElimProduct a where
     elimGetter
       :: forall b r
        . (b -> a)
-      -> (RowConstraint a ((->) b) => r)
+      -> (ProductConstraint a ((->) b) => r)
       -> r
 
 instance ElimProduct (Field k label e) where
@@ -34,8 +33,8 @@ instance
     elimGetter
       :: forall c r
        . (c -> a ⊗ b)
-      -> ( ( RowConstraint a ((->) c)
-           , RowConstraint b ((->) c)
+      -> ( ( ProductConstraint a ((->) c)
+           , ProductConstraint b ((->) c)
            ) => r
          )
       -> r
@@ -47,7 +46,7 @@ instance
 type GetterField k (label :: k) a e =
   ( ElimProduct a
   , Entails
-      (RowConstraint a ((->) a))
+      (ProductConstraint a ((->) a))
       (ImplicitParam k label (a -> e))
   )
 

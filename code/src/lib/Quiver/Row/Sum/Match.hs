@@ -1,6 +1,9 @@
+{-# LANGUAGE UndecidableInstances #-}
+
 module Quiver.Row.Sum.Match where
 
-import Quiver.Row.Row
+import Data.Void
+
 import Quiver.Row.Field
 import Quiver.Implicit.Param
 import Quiver.Row.Entail
@@ -9,50 +12,57 @@ import Quiver.Row.Sum.Elim
 import Quiver.Row.Product.Product
 
 class
-  (Row (MatchRow a))
-  => Match a where
-    type family MatchRow a
-    type family Return a
+  ( SumRow row )
+  => CoMatch row where
+    type family CoRow row r =
+      corow | corow -> row r
 
     withMatcher
-      :: forall r
-       . a
-      -> ((RowConstraint (MatchRow a) (Matcher (Return a)))
-          => r)
-      -> r
+      :: forall r1 r2
+       . CoRow row r1
+      -> (SumConstraint row (Matcher r1) => r2)
+      -> r2
 
-instance Match (Field k label (e -> r)) where
-  type MatchRow (Field k label (e -> r)) = (Field k label e)
-  type Return (Field k label (e -> r)) = r
+instance CoMatch (Field k label e) where
+  type CoRow (Field k label e) r =
+    Field k label (e -> r)
 
   withMatcher
-    :: forall r2
-     . Field k label (e -> r)
-    -> ((ImplicitParam k label (Matcher r e))
-        => r2)
+    :: forall r1 r2
+     . Field k label (e -> r1)
+    -> (ImplicitParam k label (Matcher r1 e) => r2)
     -> r2
   withMatcher (Field cont1) cont2 =
     withParam @k @label (Matcher cont1) cont2
 
-instance
-  ( Match a
-  , Match b
-  , Return a ~ Return b
-  )
-  => Match (a ⊗ b) where
-    type MatchRow (a ⊗ b) =
-      ( MatchRow a ⊗ MatchRow b )
+data EmptyMatch r = EmptyMatch
 
-    type Return (a ⊗ b) = Return a
+instance CoMatch Void where
+  type CoRow Void r = EmptyMatch r
+
+  withMatcher
+    :: forall r1 r2
+     . EmptyMatch r1
+    -> r2
+    -> r2
+  withMatcher EmptyMatch cont = cont
+
+instance
+  ( CoMatch row1
+  , CoMatch row2
+  )
+  => CoMatch (row1 ⊕ row2) where
+    type CoRow (row1 ⊕ row2) r =
+      CoRow row1 r ⊗ CoRow row2 r
 
     withMatcher
-      :: forall r
-       . a ⊗ b
-      -> ((RowConstraint (MatchRow a) (Matcher (Return a))
-          , RowConstraint (MatchRow b) (Matcher (Return b))
-          )
-          => r)
-      -> r
+      :: forall r1 r2
+       . CoRow row1 r1 ⊗ CoRow row2 r1
+      -> ( ( SumConstraint row1 (Matcher r1)
+           , SumConstraint row2 (Matcher r1)
+           )
+           => r2)
+      -> r2
     withMatcher (Product cont1 cont2) cont3 =
       withMatcher cont1 $
         withMatcher cont2 $
@@ -64,46 +74,25 @@ caseOf
   -> Field k label (e -> r)
 caseOf = Field
 
+type Match row1 row2 =
+  ( ElimSum row1
+  , CoMatch row2
+  , SubRow (SumToRow row2) (SumToRow row1)
+  )
+
 match
-  :: forall row1 row2
+  :: forall row1 row2 r
    . ( ElimSum row1
-     , Match row2
-     , Entails
-        (RowConstraint (MatchRow row2) (Matcher (Return row2)))
-        (RowConstraint row1 (Matcher (Return row2)))
+     , CoMatch row2
+     , SubRow (SumToRow row2) (SumToRow row1)
      )
   => row1
-  -> row2
-  -> Return row2
+  -> CoRow row2 r
+  -> r
 match row matcher =
   withMatcher matcher $
-    withEntail
-      @(RowConstraint (MatchRow row2) (Matcher (Return row2)))
-      @(RowConstraint row1 (Matcher (Return row2))) $
+    withSubRow
+      @(SumToRow row2)
+      @(SumToRow row1)
+      @(Matcher r) $
       elimSum row
-
-
-class (Row row) => Matchable row where
-  type family ToMatchRow row r
-
-instance Matchable (Field k label e) where
-  type ToMatchRow (Field k label e) r =
-    Field k label (e -> r)
-
-instance
-  ( Matchable a
-  , Matchable b
-  )
-  => Matchable (a ⊕ b) where
-    type ToMatchRow (Sum a b) r =
-      (ToMatchRow a r) ⊗ (ToMatchRow b r)
-
-type MatchField row1 row2 r =
-  ( ElimSum row1
-  , Matchable row2
-  , Match (ToMatchRow row2 r)
-  , Return (ToMatchRow row2 r) ~ r
-  , Entails
-      (RowConstraint row2 (Matcher r))
-      (RowConstraint row1 (Matcher r))
-  )

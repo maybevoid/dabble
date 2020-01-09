@@ -1,12 +1,10 @@
+
 module Quiver.Row.Sum.Partition where
 
 import Data.Void
 
-import Quiver.Row.Row
 import Quiver.Row.Field
-import Quiver.Row.Entail
 import Quiver.Row.Sum.Sum
-import Quiver.Row.Sum.Elim
 import Quiver.Row.Sum.Match
 
 class PartitionSum a b1 b2 where
@@ -15,6 +13,19 @@ class PartitionSum a b1 b2 where
     -> Either b1 b2
 
 instance
+  {-# INCOHERENT #-}
+  PartitionSum (a ⊕ b) a b where
+    partitionSum (Inl x) = Left x
+    partitionSum (Inr x) = Right x
+
+instance
+  {-# INCOHERENT #-}
+  PartitionSum (a ⊕ b) b a where
+    partitionSum (Inl x) = Right x
+    partitionSum (Inr x) = Left x
+
+instance
+  {-# INCOHERENT #-}
   PartitionSum
     (Field k label e)
     (Field k label e)
@@ -23,6 +34,7 @@ instance
     partitionSum = Left
 
 instance
+  {-# INCOHERENT #-}
   PartitionSum
     (Field k label e)
     Void
@@ -31,6 +43,7 @@ instance
     partitionSum = Right
 
 instance
+  {-# INCOHERENT #-}
   (PartitionSum a b1 b2)
   => PartitionSum
       (c ⊕ a)
@@ -44,6 +57,7 @@ instance
         Right b2 -> Right b2
 
 instance
+  {-# INCOHERENT #-}
   (PartitionSum a b1 b2)
   => PartitionSum
       (c ⊕ a)
@@ -56,19 +70,18 @@ instance
         Left b1 -> Left b1
         Right b2 -> Right $ Inr b2
 
+type OpenMatch row11 row12 row1 row2 =
+  ( PartitionSum row1 row11 row12
+  , Match row11 row2
+  )
+
 openMatch
-  :: forall row1 row11 row12 row2
-   . ( PartitionSum row1 row11 row12
-     , ElimSum row11
-     , Match row2
-     , Entails
-        (RowConstraint (MatchRow row2) (Matcher (Return row2)))
-        (RowConstraint row11 (Matcher (Return row2)))
-     )
+  :: forall row11 row12 row1 row2 r
+   . ( OpenMatch row11 row12 row1 row2 )
   => row1
-  -> row2
-  -> (row12 -> Return row2)
-  -> Return row2
+  -> CoRow row2 r
+  -> (row12 -> r)
+  -> r
 openMatch row1 row2 defaultCase =
   case partitionSum @row1 @row11 @row12 row1 of
     Left row11 ->

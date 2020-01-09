@@ -10,12 +10,12 @@ newtype Inject a b = Inject
   { runInject :: b -> a }
 
 class
-  (Row a)
+  (SumRow a)
   => IntroSum a where
     introSum
       :: forall b r
        . (a -> b)
-      -> (RowConstraint a (Inject b) => r)
+      -> (SumConstraint a (Inject b) => r)
       -> r
 
 instance IntroSum (Field k label e) where
@@ -39,8 +39,8 @@ instance
     introSum
       :: forall c r
        . (a ⊕ b -> c)
-      -> (( RowConstraint a (Inject c)
-          , RowConstraint b (Inject c)
+      -> (( SumConstraint a (Inject c)
+          , SumConstraint b (Inject c)
           ) => r)
       -> r
     introSum inject cont =
@@ -52,8 +52,8 @@ type ConstructSum row a e =
   ( Row row
   , IntroSum a
   , Entails
-      (RowConstraint a (Inject a))
-      (RowConstraint row (Inject a))
+      (SumConstraint a (Inject a))
+      (SumConstraint row (Inject a))
   )
 
 constructSum
@@ -64,6 +64,6 @@ constructSum
 constructSum x =
   introSum @a id $
     withEntail
-      @(RowConstraint a (Inject a))
-      @(RowConstraint (Field k label e) (Inject a)) $
+      @(SumConstraint a (Inject a))
+      @(SumConstraint (Field k label e) (Inject a)) $
         runInject (captureParam @k @label) x

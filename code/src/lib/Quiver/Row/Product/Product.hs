@@ -9,13 +9,18 @@ import Quiver.Implicit.Param
 data Product a b = Product a b
   deriving (Eq, Show)
 
+type ProductConstraint row f =
+  RowConstraint (ProductToRow row) f
+
 class
-  (Row row)
+  (Row (ProductToRow row))
   => ProductRow row where
+    type family ProductToRow row
+
     withProduct
       :: forall r
       . row
-      -> (RowConstraint row Identity => r)
+      -> (ProductConstraint row Identity => r)
       -> r
 
 infixr 7 ⊗
@@ -25,13 +30,15 @@ type a ⊗ b = Product a b
 (⊗) :: a -> b -> a ⊗ b
 (⊗) = Product
 
-instance
-  ( Row a, Row b )
-  => Row (a ⊗ b) where
-    type RowConstraint (Product a b) f =
-      (RowConstraint a f, RowConstraint b f)
+instance ProductRow () where
+  type ProductToRow () = ()
+
+  withProduct () cont = cont
 
 instance ProductRow (Field k label e) where
+  type ProductToRow (Field k label e) =
+    Field k label e
+
   withProduct
     :: forall r
      . Field k label e
@@ -44,11 +51,14 @@ instance
   ( ProductRow a
   , ProductRow b
   ) => ProductRow (a ⊗ b) where
+    type ProductToRow (a ⊗ b) =
+      (ProductToRow a) ∪ (ProductToRow b)
+
     withProduct
       :: forall r
        . a ⊗ b
-      -> (( RowConstraint a Identity
-          , RowConstraint b Identity
+      -> (( ProductConstraint a Identity
+          , ProductConstraint b Identity
           ) => r)
       -> r
     withProduct (Product a b) cont =

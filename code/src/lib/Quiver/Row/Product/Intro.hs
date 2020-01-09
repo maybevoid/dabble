@@ -10,10 +10,10 @@ import Quiver.Implicit.Param
 import Quiver.Row.Product.Product
 
 class
-  (Row a)
+  (ProductRow a)
   => IntroProduct a where
     introProduct
-      :: (RowConstraint a Identity)
+      :: (ProductConstraint a Identity)
       => a
 
 instance IntroProduct (Field k label e) where
@@ -30,50 +30,51 @@ instance
   )
   => IntroProduct (a ⊗ b) where
     introProduct
-      :: ( RowConstraint a Identity
-         , RowConstraint b Identity
+      :: ( ProductConstraint a Identity
+         , ProductConstraint b Identity
          )
       => a ⊗ b
     introProduct = introProduct ⊗ introProduct
 
 type Constructor row a =
-  ( Row row
+  ( ProductRow row
   , IntroProduct a
   , Entails
-      (RowConstraint row Identity)
-      (RowConstraint a Identity)
+      (ProductConstraint row Identity)
+      (ProductConstraint a Identity)
   )
 
 constructProduct
   :: forall row a
    . ( Constructor row a
-     , RowConstraint row Identity
+     , ProductConstraint row Identity
      )
   => a
 constructProduct =
   withEntail
-    @(RowConstraint row Identity)
-    @(RowConstraint a Identity) $
+    @(ProductConstraint row Identity)
+    @(ProductConstraint a Identity) $
       introProduct @a
 
 castConstructor
   :: forall row1 row2 a r
-   . ( Row row1
-     , Row row2
+   . ( ProductRow row1
+     , ProductRow row2
+     , ProductRow a
      , Entails
-        (RowConstraint row1 Identity)
-        (RowConstraint row2 Identity)
+        (ProductConstraint row1 Identity)
+        (ProductConstraint row2 Identity)
      , Entails
-        (RowConstraint row2 Identity)
-        (RowConstraint a Identity)
+        (ProductConstraint row2 Identity)
+        (ProductConstraint a Identity)
      )
   => ((Constructor row1 a) => r)
   -> ((Constructor row2 a) => r)
 castConstructor cont =
   joinEntail
-    @(RowConstraint row1 Identity)
-    @(RowConstraint row2 Identity)
-    @(RowConstraint a Identity) $
+    @(ProductConstraint row1 Identity)
+    @(ProductConstraint row2 Identity)
+    @(ProductConstraint a Identity) $
       cont
 
 constructField
@@ -112,14 +113,14 @@ strengthenConstruct x cont =
 
 weakenConstruct
   :: forall k label row1 row2 a e r
-   . ( Row row1
-     , Row row2
+   . ( ProductRow row1
+     , ProductRow row2
      , IntroProduct a
      , Entails
-         (RowConstraint
+         (ProductConstraint
             (Field k label e ⊗ row1)
             Identity)
-         (RowConstraint row2 Identity)
+         (ProductConstraint row2 Identity)
      )
   => e
   -> ((Constructor row1 a) => r)
@@ -127,9 +128,9 @@ weakenConstruct
 weakenConstruct x cont =
   constructField @k @label x $
     joinEntail
-      @(RowConstraint row1 Identity)
-      @(RowConstraint (Field k label e ⊗ row1) Identity)
-      @(RowConstraint row2 Identity) $
+      @(ProductConstraint row1 Identity)
+      @(ProductConstraint (Field k label e ⊗ row1) Identity)
+      @(ProductConstraint row2 Identity) $
       castConstructor
         @row1
         @row2
