@@ -1,6 +1,7 @@
 module Quiver.Test.Product.Intro where
 
 import GHC.Types
+import Data.Functor.Identity
 
 import Test.Tasty
 import Test.Tasty.HUnit
@@ -22,16 +23,16 @@ type BarField = NamedField "Bar" String
 type FooBarField = FooField ⊗ BarField
 type BarFooField = BarField ⊗ FooField
 
-fooField :: FooField
-fooField = Field "foo"
+fooField :: FooField Identity
+fooField = Field $ Identity "foo"
 
-barField :: BarField
-barField = Field "bar"
+barField :: BarField Identity
+barField = Field $ Identity "bar"
 
-fooBarPair :: FooField ⊗ BarField
+fooBarPair :: (FooField ⊗ BarField) Identity
 fooBarPair = fooField ⊗ barField
 
-barFooPair :: BarField ⊗ FooField
+barFooPair :: (BarField ⊗ FooField) Identity
 barFooPair = barField ⊗ fooField
 
 newtype Foo = Foo String
@@ -47,7 +48,7 @@ data FooBar = FooBar
 makeFoo
   :: forall a
    . (Constructor FooField a)
-  => a
+  => a Identity
 makeFoo =
   constructNamedField @"Foo" "foo" $
     constructProduct @FooField @a
@@ -55,7 +56,7 @@ makeFoo =
 makeFooBar
   :: forall a
    . (Constructor FooBarField a)
-  => a
+  => a Identity
 makeFooBar =
   constructNamedField @"Foo" "foo" $
     constructNamedField @"Bar" "bar" $
@@ -64,7 +65,7 @@ makeFooBar =
 makeFoo2
   :: forall a
    . (Constructor FooField a)
-  => a
+  => a Identity
 makeFoo2 =
   castConstructor
     @FooBarField
@@ -75,7 +76,7 @@ makeFoo2 =
 makeFooBar2
   :: forall a
    . (Constructor FooBarField a)
-  => a
+  => a Identity
 makeFooBar2 =
   weakenConstruct
     @Symbol

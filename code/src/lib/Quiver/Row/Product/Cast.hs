@@ -7,18 +7,18 @@ import Quiver.Row.Product.Intro
 import Quiver.Row.Product.Product
 
 castProduct
-  :: forall a b
+  :: forall f a b
    . ( ProductRow a
      , IntroProduct b
      , Entails
-         (ProductConstraint a Identity)
-         (ProductConstraint b Identity)
+         (ProductConstraint a f Identity)
+         (ProductConstraint b f Identity)
      )
-  => a
-  -> b
+  => a f
+  -> b f
 castProduct x =
   withProduct x $
     withEntail
-      @(ProductConstraint a Identity)
-      @(ProductConstraint b Identity) $
+      @(ProductConstraint a f Identity)
+      @(ProductConstraint b f Identity) $
       introProduct @b

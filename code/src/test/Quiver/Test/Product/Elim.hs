@@ -1,6 +1,7 @@
 module Quiver.Test.Product.Elim where
 
 import GHC.Types
+import Data.Functor.Identity
 
 import Test.Tasty
 import Test.Tasty.HUnit
@@ -14,22 +15,24 @@ productElimTests = testGroup "product elim tests"
   , test2
   ]
 
-fooField :: NamedField "Foo" String
+fooField :: NamedField "Foo" String Identity
 fooField = Field "foo"
 
-barField :: NamedField "Bar" String
+barField :: NamedField "Bar" String Identity
 barField = Field "bar"
 
 fooBarPair
   :: Product
       (NamedField "Foo" String)
       (NamedField "Bar" String)
+      Identity
 fooBarPair = Product fooField barField
 
 barFooPair
   :: Product
       (NamedField "Bar" String)
       (NamedField "Foo" String)
+      Identity
 barFooPair = Product barField fooField
 
 test1 :: TestTree
@@ -49,7 +52,7 @@ test1 = testCase "getNamedRow" $ do
 getFoo
   :: forall a
    . (NamedGetterField "Foo" a String)
-  => a
+  => a Identity
   -> String
 getFoo = getNamedRow @"Foo"
 
@@ -72,7 +75,7 @@ getMaybeFoo
    . ( NamedGetterField "Foo" a (Maybe String)
      , NamedGetterField "Bar" a String
      )
-  => a
+  => a Identity
   -> String
 getMaybeFoo x =
   case getNamedRow @"Foo" x of
@@ -84,7 +87,7 @@ getFoo2
    . ( NamedGetterField "Foo" a String
      , NamedGetterField "Bar" a String
      )
-  => a
+  => a Identity
   -> String
 getFoo2 = optionalRow @Symbol @"Foo" @a @String $ getMaybeFoo
 

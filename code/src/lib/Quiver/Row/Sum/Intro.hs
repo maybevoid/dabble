@@ -1,5 +1,7 @@
 module Quiver.Row.Sum.Intro where
 
+import Data.Functor.Identity
+
 import Quiver.Row.Row
 import Quiver.Row.Field
 import Quiver.Row.Entail
@@ -13,17 +15,18 @@ class
   (SumRow a)
   => IntroSum a where
     introSum
-      :: forall b r
-       . (a -> b)
-      -> (SumConstraint a (Inject b) => r)
+      :: forall f b r
+       . (Functor f)
+      => (a f -> b)
+      -> (SumConstraint a f (Inject b) => r)
       -> r
 
 instance IntroSum (Field k label e) where
   introSum
-    :: forall a r
-     . (Field k label e -> a)
+    :: forall f a r
+     . (Field k label e f -> a)
     -> ((ImplicitParam k label
-          (Inject a e)
+          (Inject a (f e))
         ) => r)
     -> r
   introSum inject cont =
@@ -37,10 +40,11 @@ instance
   )
   => IntroSum (a ⊕ b) where
     introSum
-      :: forall c r
-       . (a ⊕ b -> c)
-      -> (( SumConstraint a (Inject c)
-          , SumConstraint b (Inject c)
+      :: forall f c r
+       . (Functor f)
+      => ((a ⊕ b) f -> c)
+      -> (( SumConstraint a f (Inject c)
+          , SumConstraint b f (Inject c)
           ) => r)
       -> r
     introSum inject cont =
@@ -49,21 +53,21 @@ instance
           cont
 
 type ConstructSum row a e =
-  ( Row row
+  ( Row (row Identity)
   , IntroSum a
   , Entails
-      (SumConstraint a (Inject a))
-      (SumConstraint row (Inject a))
+      (SumConstraint a Identity (Inject (a Identity)))
+      (SumConstraint row Identity (Inject (a Identity)))
   )
 
 constructSum
   :: forall k (label :: k) a e
-   . (ConstructSum (Field k label e) a e)
+   . ( ConstructSum (Field k label e) a e)
   => e
-  -> a
+  -> a Identity
 constructSum x =
-  introSum @a id $
+  introSum @a @Identity id $
     withEntail
-      @(SumConstraint a (Inject a))
-      @(SumConstraint (Field k label e) (Inject a)) $
-        runInject (captureParam @k @label) x
+      @(SumConstraint a Identity (Inject (a Identity)))
+      @(SumConstraint (Field k label e) Identity (Inject (a Identity))) $
+        runInject (captureParam @k @label) (Identity x)

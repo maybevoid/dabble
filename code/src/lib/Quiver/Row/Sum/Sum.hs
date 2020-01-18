@@ -1,33 +1,38 @@
 module Quiver.Row.Sum.Sum where
 
+import Data.Kind
 import Data.Void
+
 import Quiver.Row.Row
 import Quiver.Row.Field
 
-data Sum a b =
-  Inl a | Inr b
+data Sum a b (f :: Type -> Type)
+  = Inl (a f)
+  | Inr (b f)
   deriving (Eq, Show)
 
 infixr 6 ⊕
 
 type a ⊕ b = Sum a b
 
-type SumConstraint row f =
-  RowConstraint (SumToRow row) f
+type SumConstraint row f t =
+  RowConstraint (SumToRow row f) t
 
-class
-  (Row (SumToRow row))
-  => SumRow row where
-    type family SumToRow row
+class SumRow
+  (row :: (Type -> Type) -> Type)
+  where
+    type family SumToRow row (f :: Type -> Type)
 
-instance SumRow Void where
-  type SumToRow Void = ()
+data Bottom (f :: Type -> Type)
+
+instance SumRow Bottom where
+  type SumToRow Bottom f = ()
 
 instance SumRow (Field k label e) where
-  type SumToRow (Field k label e) = Field k label e
+  type SumToRow (Field k label e) f = Field k label e f
 
 instance
   ( SumRow a, SumRow b )
   => SumRow (a ⊕ b) where
-    type SumToRow (a ⊕ b) =
-      (SumToRow a) ∪ (SumToRow b)
+    type SumToRow (a ⊕ b) f =
+      (SumToRow a f) ∪ (SumToRow b f)

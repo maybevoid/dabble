@@ -1,6 +1,7 @@
 module Quiver.Test.Sum.Intro where
 
 import GHC.Types
+import Data.Functor.Identity
 
 import Test.Tasty
 import Test.Tasty.HUnit
@@ -21,35 +22,35 @@ type FooBarField = FooField ⊕ BarField
 
 type BarFooField = BarField ⊕ FooField
 
-fooField :: FooField
+fooField :: FooField Identity
 fooField = Field "foo"
 
-barField :: BarField
+barField :: BarField Identity
 barField = Field "bar"
 
-fooInFooBar :: FooBarField
+fooInFooBar :: FooBarField Identity
 fooInFooBar = Inl fooField
 
-fooInBarFoo :: BarFooField
+fooInBarFoo :: BarFooField Identity
 fooInBarFoo = Inr fooField
 
-barInFooBar :: FooBarField
+barInFooBar :: FooBarField Identity
 barInFooBar = Inr barField
 
-barInBarFoo :: BarFooField
+barInBarFoo :: BarFooField Identity
 barInBarFoo = Inl barField
 
 makeFoo
   :: forall a
    . (ConstructSum FooField a String)
-  => a
+  => a Identity
 makeFoo =
   constructSum @Symbol @"Foo" @a @String "foo"
 
 makeBar
   :: forall a
    . (ConstructSum BarField a String)
-  => a
+  => a Identity
 makeBar =
   constructSum @Symbol @"Bar" @a @String "bar"
 
@@ -57,7 +58,7 @@ test1 :: TestTree
 test1 = testCase "constructors" $ do
   assertEqual
     "should be able to make foo field"
-    makeFoo
+    (makeFoo @FooField)
     fooField
 
   assertEqual

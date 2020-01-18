@@ -1,6 +1,7 @@
 module Quiver.Row.Product.Elim where
 
 import GHC.Types
+import Data.Functor.Identity
 
 import Quiver.Row.Entail
 import Quiver.Row.Field
@@ -11,16 +12,18 @@ class
   (ProductRow a)
   => ElimProduct a where
     elimGetter
-      :: forall b r
-       . (b -> a)
-      -> (ProductConstraint a ((->) b) => r)
+      :: forall f b r
+       . (Functor f)
+      => (b -> a f)
+      -> (ProductConstraint a f ((->) b) => r)
       -> r
 
 instance ElimProduct (Field k label e) where
   elimGetter
-    :: forall a r
-     . (a -> Field k label e)
-    -> ((ImplicitParam k label (a -> e)) => r)
+    :: forall f a r
+     . (Functor f)
+    => (a -> Field k label e f)
+    -> ((ImplicitParam k label (a -> f e)) => r)
     -> r
   elimGetter getField cont =
     withParam @k @label (unField . getField) cont
@@ -31,10 +34,11 @@ instance
   )
   => ElimProduct (a ⊗ b) where
     elimGetter
-      :: forall c r
-       . (c -> a ⊗ b)
-      -> ( ( ProductConstraint a ((->) c)
-           , ProductConstraint b ((->) c)
+      :: forall f c r
+       . (Functor f)
+      => (c -> (a ⊗ b) f)
+      -> ( ( ProductConstraint a f ((->) c)
+           , ProductConstraint b f ((->) c)
            ) => r
          )
       -> r
@@ -46,8 +50,8 @@ instance
 type GetterField k (label :: k) a e =
   ( ElimProduct a
   , Entails
-      (ProductConstraint a ((->) a))
-      (ImplicitParam k label (a -> e))
+      (ProductConstraint a Identity ((->) (a Identity)))
+      (ImplicitParam k label (a Identity -> Identity e))
   )
 
 type NamedGetterField name a e = GetterField Symbol name a e
@@ -59,24 +63,25 @@ optionalRow
 optionalRow cont =
   withParam @k @label getOptional cont
  where
-  get :: a -> e
+  get :: a Identity -> e
   get = getRow @k @label
 
-  getOptional :: a -> Maybe e
-  getOptional = Just . get
+  getOptional :: a Identity -> Identity (Maybe e)
+  getOptional = Identity . Just . get
 
 getRow
   :: forall k (label :: k) a e
-   . (GetterField k (label :: k) a e)
-  => a
+   . ( GetterField k (label :: k) a e )
+  => a Identity
   -> e
 getRow x =
-  elimGetter @a id $
-    captureParam @k @label x
+  runIdentity $
+    elimGetter @a @Identity id $
+      captureParam @k @label x
 
 getNamedRow
   :: forall (label :: Symbol) a e
-   . (GetterField Symbol label a e)
-  => a
+   . ( GetterField Symbol label a e )
+  => a Identity
   -> e
 getNamedRow = getRow @Symbol @label

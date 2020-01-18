@@ -13,23 +13,25 @@ class
   (SumRow a)
   => ElimSum a where
     elimSum
-      :: forall r
-       . (SumConstraint a (Matcher r))
-      => a
+      :: forall f r
+       . ( Functor f
+         , SumConstraint a f (Matcher r)
+         )
+      => a f
       -> r
 
-instance ElimSum Void where
+instance ElimSum Bottom where
   elimSum
-    :: forall r
-     . Void
+    :: forall f r
+     . Bottom f
     -> r
-  elimSum = absurd
+  elimSum bottom = case bottom of {}
 
 instance ElimSum (Field k label e) where
   elimSum
-    :: forall r
-     . (ImplicitParam k label (Matcher r e))
-    => Field k label e
+    :: forall f r
+     . (ImplicitParam k label (Matcher r (f e)))
+    => Field k label e f
     -> r
   elimSum (Field x) =
     runMatcher (captureParam @k @label) x
@@ -40,11 +42,12 @@ instance
   )
   => ElimSum (a ⊕ b) where
     elimSum
-      :: forall r
-       . ( SumConstraint a (Matcher r)
-         , SumConstraint b (Matcher r)
+      :: forall f r
+       . ( Functor f
+         , SumConstraint a f (Matcher r)
+         , SumConstraint b f (Matcher r)
          )
-      => a ⊕ b
+      => (a ⊕ b) f
       -> r
     elimSum (Inl x) = elimSum x
     elimSum (Inr x) = elimSum x
