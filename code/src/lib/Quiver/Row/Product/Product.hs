@@ -6,7 +6,6 @@ import Data.Kind
 import Data.Functor.Identity
 
 import Quiver.Row.Row
-import Quiver.Row.Entail
 import Quiver.Row.Field
 import Quiver.Implicit.Param
 
@@ -16,9 +15,6 @@ data Product a b (f :: Type -> Type)
 
 type ProductConstraint row f t =
   RowConstraint (ProductToRow row) f t
-
-type SubProduct row1 row2 =
-  SubRow (ProductToRow row1) (ProductToRow row2)
 
 class
   (Row (ProductToRow row))

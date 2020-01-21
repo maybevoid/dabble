@@ -78,12 +78,12 @@ makeFooBar2
    . (Constructor FooBarField a)
   => a Identity
 makeFooBar2 =
-  weakenConstruct
+  weakenConstruct2
     @Symbol
     @"Bar"
     @FooField
-    @FooBarField
     @a
+    @FooBarField
     "bar"
     makeFoo
 

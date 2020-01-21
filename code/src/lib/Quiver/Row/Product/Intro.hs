@@ -9,6 +9,13 @@ import Quiver.Row.Entail
 import Quiver.Implicit.Param
 import Quiver.Row.Product.Product
 
+type ProductSubRow row1 row2 =
+  SubRow'
+    (ProductToRow row1)
+    (ProductToRow row2)
+    Identity
+    Identity
+
 class
   (ProductRow a)
   => IntroProduct a where
@@ -39,45 +46,42 @@ instance
       => a ⊗ b ⋄ f
     introProduct = introProduct ⊗ introProduct
 
-type Constructor row a =
-  ( ProductRow row
-  , IntroProduct a
-  , Entails
-      (ProductConstraint row Identity Identity)
-      (ProductConstraint a Identity Identity)
+type Constructor row1 row2 =
+  ( ProductRow row1
+  , IntroProduct row2
+  , ProductSubRow row1 row2
   )
 
 constructProduct
-  :: forall row a
-   . ( Constructor row a
-     , ProductConstraint row Identity Identity
+  :: forall row1 row2
+   . ( Constructor row1 row2
+     , ProductConstraint row1 Identity Identity
      )
-  => a Identity
+  => row2 Identity
 constructProduct =
-  withEntail
-    @(ProductConstraint row Identity Identity)
-    @(ProductConstraint a Identity Identity) $
-      introProduct @a
+  withSubRow'
+    @(ProductToRow row1)
+    @(ProductToRow row2)
+    @Identity
+    @Identity $
+      introProduct @row2
 
 castConstructor
-  :: forall row1 row2 a r
+  :: forall row1 row2 row3 r
    . ( ProductRow row1
      , ProductRow row2
-     , ProductRow a
-     , Entails
-        (ProductConstraint row1 Identity Identity)
-        (ProductConstraint row2 Identity Identity)
-     , Entails
-        (ProductConstraint row2 Identity Identity)
-        (ProductConstraint a Identity Identity)
+     , ProductRow row3
+     , ProductSubRow row1 row2
      )
-  => ((Constructor row1 a) => r)
-  -> ((Constructor row2 a) => r)
+  => ((Constructor row1 row3) => r)
+  -> ((Constructor row2 row3) => r)
 castConstructor cont =
-  joinEntail
-    @(ProductConstraint row1 Identity Identity)
-    @(ProductConstraint row2 Identity Identity)
-    @(ProductConstraint a Identity Identity) $
+  joinSubRow
+    @(ProductToRow row1)
+    @(ProductToRow row2)
+    @(ProductToRow row3)
+    @Identity
+    @Identity
       cont
 
 constructField
@@ -96,45 +100,52 @@ constructNamedField
 constructNamedField = constructField @Symbol @label
 
 strengthenConstruct
-  :: forall k label e row a r
-   . ( Row row
-     , IntroProduct a
+  :: forall k label e row1 row2 r
+   . ( Row row1
+     , IntroProduct row2
      )
   => ((Constructor
-        (Field k label e ⊗ row)
-        a)
+        (Field k label e ⊗ row1)
+        row2)
       => r)
-  -> (Constructor row a => r)
+  -> (Constructor row1 row2 => r)
 strengthenConstruct cont =
     castConstructor
-      @(Field k label e ⊗ row)
-      @row
-      @a
+      @(Field k label e ⊗ row1)
+      @row1
+      @row2
       cont
 
 weakenConstruct
-  :: forall k label row1 row2 a e r
+  :: forall k label row1 row2 e r
    . ( ProductRow row1
-     , ProductRow row2
-     , IntroProduct a
-     , Entails
-         (ProductConstraint
-            (Field k label e ⊗ row1)
-            Identity
-            Identity)
-         (ProductConstraint row2 Identity Identity)
+     , IntroProduct row2
      )
   => e
-  -> ((Constructor row1 a) => r)
-  -> ((Constructor row2 a) => r)
+  -> ((Constructor row1 row2) => r)
+  -> ((Constructor (Field k label e ⊗ row1) row2) => r)
 weakenConstruct x cont =
   constructField @k @label x $
-    joinEntail
-      @(ProductConstraint row1 Identity Identity)
-      @(ProductConstraint (Field k label e ⊗ row1) Identity Identity)
-      @(ProductConstraint row2 Identity Identity) $
-      castConstructor
-        @row1
-        @row2
-        @a
-        cont
+    joinSubRow
+      @(ProductToRow row1)
+      @(ProductToRow (Field k label e ⊗ row1))
+      @(ProductToRow row2)
+      @Identity
+      @Identity
+      cont
+
+weakenConstruct2
+  :: forall k label row1 row2 row3 e r
+   . ( ProductRow row1
+     , IntroProduct row3
+     , ProductSubRow (Field k label e ⊗ row1) row3
+     )
+  => e
+  -> ((Constructor row1 row2) => r)
+  -> ((Constructor row3 row2) => r)
+weakenConstruct2 x cont =
+  castConstructor
+    @(Field k label e ⊗ row1)
+    @row3
+    @row2 $
+      weakenConstruct @k @label @row1 @row2 x cont
