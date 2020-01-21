@@ -53,7 +53,7 @@ instance
           cont
 
 type ConstructSum row a e =
-  ( Row (row Identity)
+  ( Row row
   , IntroSum a
   , Entails
       (SumConstraint a Identity (Inject (a Identity)))

@@ -83,7 +83,7 @@ castConstructor cont =
 constructField
   :: forall k label e r
    . e
-  -> ((RowConstraint (Field k label e Identity) Identity) => r)
+  -> ((RowConstraint (Field k label e) Identity Identity) => r)
   -> r
 constructField x cont =
   withParam @k @label (Identity (Identity x)) cont
@@ -91,7 +91,7 @@ constructField x cont =
 constructNamedField
   :: forall label e r
    . e
-  -> ((RowConstraint (NamedField label e Identity) Identity) => r)
+  -> ((RowConstraint (NamedField label e) Identity Identity) => r)
   -> r
 constructNamedField = constructField @Symbol @label
 

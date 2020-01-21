@@ -13,6 +13,6 @@ newtype Field k (label :: k) e f = Field {
 
 type NamedField (name :: Symbol) = Field Symbol name
 
-instance Row (Field k (label :: k) e f) where
-  type RowConstraint (Field k label e f) t =
+instance Row (Field k (label :: k) e) where
+  type RowConstraint (Field k label e) f t =
     ImplicitParam k label (t (f e))

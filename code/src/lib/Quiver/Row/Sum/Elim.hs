@@ -1,7 +1,6 @@
 module Quiver.Row.Sum.Elim where
 
-import Data.Void
-
+import Quiver.Row.Row
 import Quiver.Row.Field
 import Quiver.Implicit.Param
 import Quiver.Row.Sum.Sum
@@ -25,7 +24,7 @@ instance ElimSum Bottom where
     :: forall f r
      . Bottom f
     -> r
-  elimSum bottom = case bottom of {}
+  elimSum = bottom
 
 instance ElimSum (Field k label e) where
   elimSum

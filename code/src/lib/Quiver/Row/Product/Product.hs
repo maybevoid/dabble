@@ -1,9 +1,12 @@
+{-# LANGUAGE UndecidableInstances #-}
+
 module Quiver.Row.Product.Product where
 
 import Data.Kind
 import Data.Functor.Identity
 
 import Quiver.Row.Row
+import Quiver.Row.Entail
 import Quiver.Row.Field
 import Quiver.Implicit.Param
 
@@ -12,12 +15,18 @@ data Product a b (f :: Type -> Type)
   deriving (Eq, Show)
 
 type ProductConstraint row f t =
-  RowConstraint (ProductToRow row f) t
+  RowConstraint (ProductToRow row) f t
 
-class ProductRow
+type SubProduct row1 row2 =
+  SubRow (ProductToRow row1) (ProductToRow row2)
+
+class
+  (Row (ProductToRow row))
+  => ProductRow
     (row :: (Type -> Type) -> Type)
   where
-    type family ProductToRow row (f :: Type -> Type)
+    type family ProductToRow row
+      :: (Type -> Type) -> Type
 
     withProduct
       :: forall f r
@@ -32,16 +41,14 @@ type a ⊗ b = Product a b
 (⊗) :: a f -> b f -> (a ⊗ b) f
 (⊗) = Product
 
-data Top (f :: Type -> Type) = Top
-
 instance ProductRow Top where
-  type ProductToRow Top f = ()
+  type ProductToRow Top = Top
 
   withProduct Top cont = cont
 
 instance ProductRow (Field k label e) where
-  type ProductToRow (Field k label e) f =
-    Field k label e f
+  type ProductToRow (Field k label e) =
+    Field k label e
 
   withProduct
     :: forall f r
@@ -55,8 +62,8 @@ instance
   ( ProductRow a
   , ProductRow b
   ) => ProductRow (a ⊗ b) where
-    type ProductToRow (a ⊗ b) f =
-      (ProductToRow a f) ∪ (ProductToRow b f)
+    type ProductToRow (a ⊗ b) =
+      (ProductToRow a) ∪ (ProductToRow b)
 
     withProduct
       :: forall f r
