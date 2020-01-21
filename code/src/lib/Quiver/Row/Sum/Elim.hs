@@ -46,7 +46,7 @@ instance
          , SumConstraint a f (Matcher r)
          , SumConstraint b f (Matcher r)
          )
-      => (a ⊕ b) f
+      => a ⊕ b ⋄ f
       -> r
     elimSum (Inl x) = elimSum x
     elimSum (Inr x) = elimSum x

@@ -2,6 +2,7 @@
 
 module Quiver.Row.Sum.Match where
 
+import GHC.Types
 import Data.Functor.Identity
 
 import Quiver.Row.Row
@@ -60,9 +61,9 @@ instance
           cont
 
 caseOf
-  :: forall k (label :: k) e r
+  :: forall (label :: Symbol) e r
    . (e -> r)
-  -> Field k label e (Matcher r)
+  -> NamedField label e (Matcher r)
 caseOf = Field . Matcher
 
 type Match row1 row2 =

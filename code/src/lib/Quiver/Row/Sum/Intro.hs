@@ -42,7 +42,7 @@ instance
     introSum
       :: forall f c r
        . (Functor f)
-      => ((a ⊕ b) f -> c)
+      => (a ⊕ b ⋄ f -> c)
       -> (( SumConstraint a f (Inject c)
           , SumConstraint b f (Inject c)
           ) => r)

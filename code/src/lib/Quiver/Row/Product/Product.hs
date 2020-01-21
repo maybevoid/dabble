@@ -63,7 +63,7 @@ instance
   , ProductRow b
   ) => ProductRow (a ⊗ b) where
     type ProductToRow (a ⊗ b) =
-      (ProductToRow a) ∪ (ProductToRow b)
+      ProductToRow a ∪ ProductToRow b
 
     withProduct
       :: forall f r

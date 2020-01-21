@@ -36,7 +36,7 @@ instance
        . ( ProductConstraint a f Identity
          , ProductConstraint b f Identity
          )
-      => (a ⊗ b) f
+      => a ⊗ b ⋄ f
     introProduct = introProduct ⊗ introProduct
 
 type Constructor row a =
@@ -100,14 +100,12 @@ strengthenConstruct
    . ( Row row
      , IntroProduct a
      )
-  => e
-  -> ((Constructor
+  => ((Constructor
         (Field k label e ⊗ row)
         a)
       => r)
   -> (Constructor row a => r)
-strengthenConstruct x cont =
-  withParam @k @label (Identity x) $
+strengthenConstruct cont =
     castConstructor
       @(Field k label e ⊗ row)
       @row

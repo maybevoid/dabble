@@ -3,6 +3,7 @@ module Quiver.Row.Product.Elim where
 import GHC.Types
 import Data.Functor.Identity
 
+import Quiver.Row.Row
 import Quiver.Row.Entail
 import Quiver.Row.Field
 import Quiver.Implicit.Param
@@ -36,7 +37,7 @@ instance
     elimGetter
       :: forall f c r
        . (Functor f)
-      => (c -> (a ⊗ b) f)
+      => (c -> a ⊗ b ⋄ f)
       -> ( ( ProductConstraint a f ((->) c)
            , ProductConstraint b f ((->) c)
            ) => r

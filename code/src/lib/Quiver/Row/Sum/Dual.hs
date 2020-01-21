@@ -26,4 +26,4 @@ instance
   )
   => DualSum (row1 ⊕ row2) where
     type CoSum (row1 ⊕ row2) =
-      (CoSum row1) ⊗ (CoSum row2)
+      CoSum row1 ⊗ CoSum row2

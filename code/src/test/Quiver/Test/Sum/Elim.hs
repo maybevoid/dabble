@@ -89,10 +89,10 @@ matchFooBar
   => a Identity
   -> String
 matchFooBar x = match @a x $
-    (caseOf @Symbol @"Foo" @String $
+    (caseOf @"Foo" $
       \val -> "foo val: " ++ val
     )
-  ⊗ (caseOf @Symbol @"Bar" @String $
+  ⊗ (caseOf @"Bar" $
       \val -> "bar val: " ++ val
     )
 
@@ -135,10 +135,10 @@ openMatchFooBar
   -> String
 openMatchFooBar x =
   openMatch @a1 @a2 @a x
-    ( (caseOf @Symbol @"Foo" @String $
+    ( (caseOf @"Foo" $
         \val -> "foo val: " ++ val
       )
-    ⊗ (caseOf @Symbol @"Bar" @String $
+    ⊗ (caseOf @"Bar" $
         \val -> "bar val: " ++ val
       )
     )

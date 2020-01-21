@@ -26,4 +26,4 @@ instance
   )
   => DualProduct (row1 ⊗ row2) where
     type CoProduct (row1 ⊗ row2) =
-      (CoProduct row1) ⊕ (CoProduct row2)
+      CoProduct row1 ⊕ CoProduct row2

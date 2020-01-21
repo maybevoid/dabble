@@ -17,6 +17,9 @@ data Union
 infixr 7 ∪
 type row1 ∪ row2 = Union row1 row2
 
+infixr 5 ⋄
+type a ⋄ b = a b
+
 instance
   ( Row row1
   , Row row2
