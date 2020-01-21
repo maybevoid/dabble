@@ -3,10 +3,12 @@ module Quiver.Row.Sum.Partition where
 
 import Data.Functor.Identity
 import Quiver.Row.Row
+import Quiver.Row.Entail
 import Quiver.Row.Field
 import Quiver.Row.Sum.Sum
 import Quiver.Row.Sum.Match
 import Quiver.Row.Sum.Elim
+import Quiver.Row.Product.Product
 
 class
   ( SumRow a
@@ -94,9 +96,13 @@ type OpenMatch row11 row12 row1 row2 =
 
 openMatch
   :: forall row11 row12 row1 row2 r
-   . ( OpenMatch row11 row12 row1 row2 )
+   . ( PartitionSum row1 row11 row12
+     , ElimSum row11
+     , CoMatch row2
+     , SubRow (ProductToRow row2) (SumToRow row11)
+     )
   => row1 Identity
-  -> CoRow row2 (Matcher r)
+  -> row2 (Matcher r)
   -> (row12 Identity -> r)
   -> r
 openMatch row1 row2 defaultCase =

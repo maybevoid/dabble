@@ -2,8 +2,6 @@
 
 module Quiver.Row.Sum.Match where
 
--- import Data.Void
-import Data.Kind
 import Data.Functor.Identity
 
 import Quiver.Row.Row
@@ -12,25 +10,19 @@ import Quiver.Implicit.Param
 import Quiver.Row.Entail
 import Quiver.Row.Sum.Sum
 import Quiver.Row.Sum.Elim
+import Quiver.Row.Sum.Dual
 import Quiver.Row.Product.Product
 
 class
-  ( SumRow row
-  , ProductRow (CoRow row)
-  , SumToRow row ~ ProductToRow (CoRow row)
-  )
+  ( ProductRow row )
   => CoMatch row where
-    type family CoRow row :: (Type -> Type) -> Type
-
     withMatcher
       :: forall r1 r2
-       . CoRow row (Matcher r1)
-      -> (SumConstraint row Identity (Matcher r1) => r2)
+       . row (Matcher r1)
+      -> (ProductConstraint row Identity (Matcher r1) => r2)
       -> r2
 
 instance CoMatch (Field k label e) where
-  type CoRow (Field k label e) = Field k label e
-
   withMatcher
     :: forall r1 r2
      . Field k label e (Matcher r1)
@@ -41,9 +33,7 @@ instance CoMatch (Field k label e) where
       (Matcher $ matcher . runIdentity)
       cont
 
-instance CoMatch Bottom where
-  type CoRow Bottom = Top
-
+instance CoMatch Top where
   withMatcher
     :: forall r1 r2
      . Top (Matcher r1)
@@ -55,15 +45,12 @@ instance
   ( CoMatch row1
   , CoMatch row2
   )
-  => CoMatch (row1 ⊕ row2) where
-    type CoRow (row1 ⊕ row2) =
-      (CoRow row1 ⊗ CoRow row2)
-
+  => CoMatch (row1 ⊗ row2) where
     withMatcher
       :: forall r1 r2
-       . CoRow (row1 ⊕ row2) (Matcher r1)
-      -> ( ( SumConstraint row1 Identity (Matcher r1)
-           , SumConstraint row2 Identity (Matcher r1)
+       . (row1 ⊗ row2) (Matcher r1)
+      -> ( ( ProductConstraint row1 Identity (Matcher r1)
+           , ProductConstraint row2 Identity (Matcher r1)
            )
            => r2)
       -> r2
@@ -80,21 +67,24 @@ caseOf = Field . Matcher
 
 type Match row1 row2 =
   ( ElimSum row1
-  , CoMatch row2
+  , DualSum row2
+  , CoMatch (CoSum row2)
   , SubRow (SumToRow row2) (SumToRow row1)
   )
 
 match
   :: forall row1 row2 r
-   . ( Match row1 row2
+   . ( ElimSum row1
+     , CoMatch row2
+     , SubRow (ProductToRow row2) (SumToRow row1)
      )
   => row1 Identity
-  -> CoRow row2 (Matcher r)
+  -> row2 (Matcher r)
   -> r
 match row matcher =
   withMatcher @row2 matcher $
     withSubRow
-      @(SumToRow row2)
+      @(ProductToRow row2)
       @(SumToRow row1)
       @Identity
       @(Matcher r) $

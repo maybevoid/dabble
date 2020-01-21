@@ -88,7 +88,7 @@ matchFooBar
    . (Match a FooBarField)
   => a Identity
   -> String
-matchFooBar x = match @a @FooBarField x $
+matchFooBar x = match @a x $
     (caseOf @Symbol @"Foo" @String $
       \val -> "foo val: " ++ val
     )
@@ -134,7 +134,7 @@ openMatchFooBar
   => a Identity
   -> String
 openMatchFooBar x =
-  openMatch @a1 @a2 @a @FooBarField x
+  openMatch @a1 @a2 @a x
     ( (caseOf @Symbol @"Foo" @String $
         \val -> "foo val: " ++ val
       )

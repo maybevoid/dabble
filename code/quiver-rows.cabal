@@ -67,19 +67,22 @@ library
   import: deps
   exposed-modules:
     Quiver.Implicit.Param
-    Quiver.Row.Dict
+
+    Quiver.Row.Sum
     Quiver.Row.Row
+    Quiver.Row.Dict
     Quiver.Row.Field
     Quiver.Row.Entail
     Quiver.Row.Product
-    Quiver.Row.Sum
 
-    Quiver.Row.Product.Product
     Quiver.Row.Product.Elim
-    Quiver.Row.Product.Intro
     Quiver.Row.Product.Cast
+    Quiver.Row.Product.Dual
+    Quiver.Row.Product.Intro
+    Quiver.Row.Product.Product
 
     Quiver.Row.Sum.Sum
+    Quiver.Row.Sum.Dual
     Quiver.Row.Sum.Elim
     Quiver.Row.Sum.Intro
     Quiver.Row.Sum.Match

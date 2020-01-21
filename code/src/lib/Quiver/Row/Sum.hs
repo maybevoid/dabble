@@ -4,6 +4,7 @@ module Quiver.Row.Sum
   , module Quiver.Row.Sum.Elim
   , module Quiver.Row.Sum.Match
   , module Quiver.Row.Sum.Partition
+  , module Quiver.Row.Sum.Dual
   )
 where
 
@@ -12,3 +13,4 @@ import Quiver.Row.Sum.Intro
 import Quiver.Row.Sum.Elim
 import Quiver.Row.Sum.Match
 import Quiver.Row.Sum.Partition
+import Quiver.Row.Sum.Dual
