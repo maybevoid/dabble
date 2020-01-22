@@ -1,64 +1,17 @@
-{-# LANGUAGE UndecidableInstances #-}
-
 module Quiver.Row.Sum.Match where
 
 import GHC.Types
 import Data.Functor.Identity
 
-import Quiver.Row.Row
 import Quiver.Row.Field
-import Quiver.Implicit.Param
 import Quiver.Row.Entail
 import Quiver.Row.Sum.Sum
 import Quiver.Row.Sum.Elim
 import Quiver.Row.Sum.Dual
+import Quiver.Row.Sum.Partition
+import Quiver.Row.Sum.Intersect
 import Quiver.Row.Product.Product
 
-class
-  ( ProductRow row )
-  => CoMatch row where
-    withMatcher
-      :: forall r1 r2
-       . row (Matcher r1)
-      -> (ProductConstraint row Identity (Matcher r1) => r2)
-      -> r2
-
-instance CoMatch (Field k label e) where
-  withMatcher
-    :: forall r1 r2
-     . Field k label e (Matcher r1)
-    -> (ImplicitParam k label (Matcher r1 (Identity e)) => r2)
-    -> r2
-  withMatcher (Field (Matcher matcher)) cont =
-    withParam @k @label
-      (Matcher $ matcher . runIdentity)
-      cont
-
-instance CoMatch Top where
-  withMatcher
-    :: forall r1 r2
-     . Top (Matcher r1)
-    -> r2
-    -> r2
-  withMatcher Top cont = cont
-
-instance
-  ( CoMatch row1
-  , CoMatch row2
-  )
-  => CoMatch (row1 ⊗ row2) where
-    withMatcher
-      :: forall r1 r2
-       . (row1 ⊗ row2) (Matcher r1)
-      -> ( ( ProductConstraint row1 Identity (Matcher r1)
-           , ProductConstraint row2 Identity (Matcher r1)
-           )
-           => r2)
-      -> r2
-    withMatcher (Product matcher1 matcher2) cont =
-      withMatcher @row1 matcher1 $
-        withMatcher @row2 matcher2 $
-          cont
 
 caseOf
   :: forall (label :: Symbol) e r
@@ -69,24 +22,65 @@ caseOf = Field . Matcher
 type Match row1 row2 =
   ( ElimSum row1
   , DualSum row2
-  , CoMatch (CoSum row2)
-  , SubRow (SumToRow row2) (SumToRow row1)
+  , IntersectSum row1
+  , SubRow
+      (SumToRow row2)
+      (SumToRow row1)
+  )
+
+type OpenMatch row11 row12 row1 row2 =
+  ( PartitionSum row1 row11 row12
+  , Match row11 row2
   )
 
 match
   :: forall row1 row2 r
    . ( ElimSum row1
-     , CoMatch row2
-     , SubRow (ProductToRow row2) (SumToRow row1)
+     , IntersectSum row1
+     , ProductRow row2
+     , SubRow
+        (ProductToRow row2)
+        (SumToRow row1)
      )
   => row1 Identity
   -> row2 (Matcher r)
   -> r
-match row matcher =
-  withMatcher @row2 matcher $
-    withSubRow
+match row1 matcher = convergeSum row2 mergeMatch
+ where
+  row2 :: row1 (Merge Identity (Matcher r))
+  row2 =
+    runSubRow
       @(ProductToRow row2)
       @(SumToRow row1)
-      @Identity
-      @(Matcher r) $
-        elimSum row
+      @(Matcher r)
+      @Identity $
+        intersectSumProduct row1 matcher
+
+  mergeMatch
+    :: forall x
+     . Merge Identity (Matcher r) x
+    -> r
+  mergeMatch
+    (Merge (Identity x) (Matcher cont))
+    = cont x
+
+openMatch
+  :: forall row11 row12 row1 row2 r
+   . ( PartitionSum row1 row11 row12
+     , ElimSum row11
+     , IntersectSum row11
+     , ProductRow row2
+     , SubRow
+        (ProductToRow row2)
+        (SumToRow row11)
+     )
+  => row1 Identity
+  -> row2 (Matcher r)
+  -> (row12 Identity -> r)
+  -> r
+openMatch row1 row2 defaultCase =
+  case partitionSum @row1 @row11 @row12 row1 of
+    Left row11 ->
+      match @_ @row2 row11 row2
+    Right row12 ->
+      defaultCase row12

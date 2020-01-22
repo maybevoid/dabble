@@ -66,6 +66,11 @@ class
   => SubRow row1 row2 where
     rowCast :: RowCast row1 row2
 
+    runSubRow
+      :: forall f t r
+       . (SubRow' row1 row2 f t => r)
+      -> r
+
 instance
   ( Row row1
   , Row row2
@@ -74,6 +79,8 @@ instance
   => SubRow row1 row2 where
     rowCast :: RowCast row1 row2
     rowCast = rowCast' @row1 @row2
+
+    runSubRow cont = cont
 
 class
   ( Row row1

@@ -148,12 +148,16 @@ test2 :: TestTree
 test2 = testCase "open sum partition" $ do
   assertEqual
     "should be partition to left"
-    (partitionSum @FooBarField @FooField @BarField fooInFooBar)
+    (partitionSum
+      @FooBarField @FooField @BarField
+      fooInFooBar)
     (Left fooField)
 
   assertEqual
     "should be partition to left"
-    (partitionSum @FooBarField @BarField @FooField fooInFooBar)
+    (partitionSum
+      @FooBarField @BarField @FooField
+      fooInFooBar)
     (Right fooField)
 
 test3 :: TestTree

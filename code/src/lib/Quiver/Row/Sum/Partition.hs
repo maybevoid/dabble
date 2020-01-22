@@ -1,14 +1,9 @@
 
 module Quiver.Row.Sum.Partition where
 
-import Data.Functor.Identity
 import Quiver.Row.Row
-import Quiver.Row.Entail
 import Quiver.Row.Field
 import Quiver.Row.Sum.Sum
-import Quiver.Row.Sum.Match
-import Quiver.Row.Sum.Elim
-import Quiver.Row.Product.Product
 
 class
   ( SumRow a
@@ -88,26 +83,3 @@ instance
       case partitionSum a of
         Left b1 -> Left b1
         Right b2 -> Right $ Inr b2
-
-type OpenMatch row11 row12 row1 row2 =
-  ( PartitionSum row1 row11 row12
-  , Match row11 row2
-  )
-
-openMatch
-  :: forall row11 row12 row1 row2 r
-   . ( PartitionSum row1 row11 row12
-     , ElimSum row11
-     , CoMatch row2
-     , SubRow (ProductToRow row2) (SumToRow row11)
-     )
-  => row1 Identity
-  -> row2 (Matcher r)
-  -> (row12 Identity -> r)
-  -> r
-openMatch row1 row2 defaultCase =
-  case partitionSum @row1 @row11 @row12 row1 of
-    Left row11 ->
-      match @_ @row2 row11 row2
-    Right row12 ->
-      defaultCase row12

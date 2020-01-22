@@ -87,6 +87,7 @@ library
     Quiver.Row.Sum.Intro
     Quiver.Row.Sum.Match
     Quiver.Row.Sum.Partition
+    Quiver.Row.Sum.Intersect
 
   other-modules:
 

@@ -9,14 +9,20 @@ newtype Matcher r a = Matcher
   { runMatcher :: a -> r }
 
 class
-  (SumRow a)
-  => ElimSum a where
+  (SumRow row)
+  => ElimSum row where
     elimSum
       :: forall f r
        . ( Functor f
-         , SumConstraint a f (Matcher r)
+         , SumConstraint row f (Matcher r)
          )
-      => a f
+      => row f
+      -> r
+
+    convergeSum
+      :: forall f r
+       . row f
+      -> (forall x . f x -> r)
       -> r
 
 instance ElimSum Bottom where
@@ -26,6 +32,8 @@ instance ElimSum Bottom where
     -> r
   elimSum = bottom
 
+  convergeSum bot _ = bottom bot
+
 instance ElimSum (Field k label e) where
   elimSum
     :: forall f r
@@ -34,6 +42,13 @@ instance ElimSum (Field k label e) where
     -> r
   elimSum (Field x) =
     runMatcher (captureParam @k @label) x
+
+  convergeSum
+    :: forall f r
+     . Field k label e f
+    -> (forall x . f x -> r)
+    -> r
+  convergeSum (Field e) f = f e
 
 instance
   ( ElimSum a
@@ -50,3 +65,14 @@ instance
       -> r
     elimSum (Inl x) = elimSum x
     elimSum (Inr x) = elimSum x
+
+    convergeSum
+      :: forall f r
+       . a ⊕ b ⋄ f
+      -> (forall x . f x -> r)
+      -> r
+    convergeSum (Inl x) f =
+      convergeSum x f
+
+    convergeSum (Inr x) f =
+      convergeSum x f

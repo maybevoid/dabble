@@ -5,6 +5,7 @@ module Quiver.Row.Sum
   , module Quiver.Row.Sum.Match
   , module Quiver.Row.Sum.Partition
   , module Quiver.Row.Sum.Dual
+  , module Quiver.Row.Sum.Intersect
   )
 where
 
@@ -14,3 +15,4 @@ import Quiver.Row.Sum.Elim
 import Quiver.Row.Sum.Match
 import Quiver.Row.Sum.Partition
 import Quiver.Row.Sum.Dual
+import Quiver.Row.Sum.Intersect
