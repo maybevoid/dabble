@@ -1,19 +1,11 @@
-{ nixpkgs ? import ./nixpkgs.nix {} }:
+{ useLocal ? false
+, nixpkgs ? import ./nixpkgs.nix {inherit useLocal; }
+}:
 let
-  inherit (nixpkgs) pkgs;
-  haskellPackages = pkgs.haskell.packages.ghc881;
-
-  project = haskellPackages.callPackage ./release.nix {
-    inherit nixpkgs haskellPackages;
-  };
+  release = import ./default.nix
+    { inherit useLocal nixpkgs; };
 in
-pkgs.mkShell {
-  name = "shell";
-  LANG = "en_US.UTF-8";
-  inputsFrom = [ project.env ];
-  buildInputs = [
-    pkgs.glibcLocales
-    haskellPackages.cabal-install
-    haskellPackages.ghcid
-  ];
+{ ghc86 = release.ghc86.shell;
+  ghc88 = release.ghc88.shell;
+  ghc810= release.ghc810.shell;
 }

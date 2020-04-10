@@ -1,13 +1,11 @@
-{
-  nixpkgs ? import ./nixpkgs.nix {},
-  haskellPackages ? nixpkgs.pkgs.haskellPackages
+{ useLocal ? false
+, nixpkgs ? import ./nixpkgs.nix {inherit useLocal; }
 }:
 let
-  inherit (nixpkgs) pkgs;
+  release = import ./default.nix
+    { inherit useLocal nixpkgs; };
 in
-pkgs.haskell.lib.doBenchmark
-  ( haskellPackages.callCabal2nix
-      "quiver-rows"
-      ../code
-      {}
-  )
+{ ghc86 = release.ghc86.build;
+  ghc88 = release.ghc88.build;
+  ghc810 = release.ghc810.build;
+}

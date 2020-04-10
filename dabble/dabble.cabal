@@ -1,0 +1,108 @@
+cabal-version: 2.4
+
+name:           dabble
+version:        0.1.0
+synopsis:       Row polymorphic product and sum types
+category:       Effect
+stability:      experimental
+homepage:       https://github.com/maybevoid/dabble
+bug-reports:    https://github.com/maybevoid/dabble/issues
+author:         Soares Chen
+maintainer:     Soares Chen <soares.chen@maybevoid.com>
+copyright:      Copyright (C) Soares Ruofei Chen
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://github.com/maybevoid/implicit-effects
+
+common deps
+  ghc-options: -Wall -O2 -flate-specialise
+  default-language: Haskell2010
+  build-depends:
+      base
+    , quasi-params
+    , async
+    , free
+    , mtl
+    , reflection
+    , constraints
+    , transformers
+    , monad-control
+    , ghc-prim
+  default-extensions:
+    GADTs
+    Strict
+    DataKinds
+    EmptyCase
+    PolyKinds
+    StrictData
+    RankNTypes
+    TypeFamilies
+    InstanceSigs
+    TypeOperators
+    DeriveFunctor
+    ImplicitParams
+    ExplicitForAll
+    KindSignatures
+    PatternSynonyms
+    ConstraintKinds
+    TypeApplications
+    FlexibleContexts
+    FlexibleInstances
+    DerivingStrategies
+    AllowAmbiguousTypes
+    ScopedTypeVariables
+    QuantifiedConstraints
+    MultiParamTypeClasses
+    FunctionalDependencies
+    TypeFamilyDependencies
+    GeneralizedNewtypeDeriving
+
+library
+  import: deps
+  exposed-modules:
+    Data.Dabble.Sum
+    Data.Dabble.Row
+    Data.Dabble.Dict
+    Data.Dabble.Field
+    Data.Dabble.Entail
+    Data.Dabble.Product
+
+    Data.Dabble.Product.Elim
+    Data.Dabble.Product.Cast
+    Data.Dabble.Product.Dual
+    Data.Dabble.Product.Intro
+    Data.Dabble.Product.Product
+
+    Data.Dabble.Sum.Sum
+    Data.Dabble.Sum.Dual
+    Data.Dabble.Sum.Elim
+    Data.Dabble.Sum.Intro
+    Data.Dabble.Sum.Match
+    Data.Dabble.Sum.Partition
+    Data.Dabble.Sum.Intersect
+
+  other-modules:
+
+  hs-source-dirs:
+      src/lib
+
+test-suite dabble-test
+  import: deps
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  other-modules:
+    Dabble.Test.Product.Intro
+    Dabble.Test.Product.Elim
+    Dabble.Test.Sum.Intro
+    Dabble.Test.Sum.Elim
+
+  hs-source-dirs:
+      src/test
+  build-depends:
+      dabble
+    , tasty
+    , tasty-hunit

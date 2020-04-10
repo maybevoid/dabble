@@ -1,8 +1,5 @@
-nixOptions :
+{ useLocal }:
 let
-  nixpkgsSource = builtins.fetchGit {
-    url = "https://github.com/NixOS/nixpkgs.git";
-    rev = "f1568223c9cd39f6771a58944fb8f79ac03f1e85";
-  };
+  nix-src = import ./source/maybevoid.nix { inherit useLocal; };
 in
-import nixpkgsSource nixOptions
+import (nix-src + /release/nixpkgs.nix)
