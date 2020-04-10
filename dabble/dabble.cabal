@@ -55,6 +55,7 @@ common deps
     DerivingStrategies
     AllowAmbiguousTypes
     ScopedTypeVariables
+    UndecidableInstances
     QuantifiedConstraints
     MultiParamTypeClasses
     FunctionalDependencies

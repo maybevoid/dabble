@@ -11,7 +11,7 @@ mergeDict :: Dict p -> Dict q -> Dict (p, q)
 mergeDict Dict Dict = Dict
 
 implicitDict
-  :: forall (label :: k) a
+  :: forall k (label :: k) a
    . a
   -> Dict (Param k label a)
 implicitDict x =

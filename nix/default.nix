@@ -7,7 +7,7 @@ let
   nix-src = import ./source/maybevoid.nix { inherit useLocal; };
 
   sourceOverride = {
-    casimir = import ./source/dabble.nix;
+    dabble = import ./source/dabble.nix;
   };
 
   allRelease = import (nix-src + /release/all.nix)
